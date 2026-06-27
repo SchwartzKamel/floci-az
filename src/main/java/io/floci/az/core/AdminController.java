@@ -14,6 +14,7 @@ import io.floci.az.services.queue.QueueServiceHandler;
 import io.floci.az.services.redis.RedisHandler;
 import io.floci.az.services.servicebus.ServiceBusHandler;
 import io.floci.az.services.sql.SqlHandler;
+import io.floci.az.services.postgres.PostgresHandler;
 import io.floci.az.services.table.TableServiceHandler;
 import io.floci.az.services.vm.VmHandler;
 import io.floci.az.services.monitor.MonitorHandler;
@@ -39,6 +40,7 @@ public class AdminController {
     @Inject QueueServiceHandler     queueHandler;
     @Inject ServiceBusHandler       serviceBusHandler;
     @Inject SqlHandler              sqlHandler;
+    @Inject PostgresHandler         postgresHandler;
     @Inject TableServiceHandler     tableHandler;
     @Inject VmHandler               vmHandler;
     @Inject RedisHandler            redisHandler;
@@ -84,6 +86,7 @@ public class AdminController {
 
         // Docker-backed services — stop containers first, then clear state
         sqlHandler.clearAll();
+        postgresHandler.clearAll();
         eventHubHandler.clearAll();
 
         return Response.noContent().build();
