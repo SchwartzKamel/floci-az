@@ -180,7 +180,7 @@ public class PostgresHandler implements AzureServiceHandler {
                 PostgresState.ServerEntry entry = new PostgresState.ServerEntry(
                     serverName, sub, rg, location, version, login, password,
                     skuName, skuTier, storageGB,
-                    null, 0, tags,
+                    null, 0, "localhost", tags,
                     new ConcurrentHashMap<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
                     Instant.now());
                 state.putServer(entry);
@@ -225,7 +225,7 @@ public class PostgresHandler implements AzureServiceHandler {
                 existing.location(), version, existing.administratorLogin(),
                 password.isBlank() ? existing.administratorLoginPassword() : password,
                 skuName, skuTier, storageGB,
-                existing.containerId(), existing.hostPort(), mergedTags,
+                existing.containerId(), existing.hostPort(), existing.host(), mergedTags,
                 existing.databases(), existing.firewallRules(), existing.configurations(),
                 existing.createdAt());
             state.putServer(updated);
@@ -447,7 +447,9 @@ public class PostgresHandler implements AzureServiceHandler {
         props.put("provisioningState", ready ? "Succeeded" : "Creating");
         props.put("storage", Map.of("storageSizeGB", s.storageSizeGB()));
         props.put("network", Map.of("publicNetworkAccess", "Enabled"));
-        // floci-az convenience — not in the real spec
+        // floci-az convenience — not in the real spec. This is the reachable port (the published
+        // host port for host networking, or the in-network container port when floci-az runs in a
+        // container). Prefer the /connect endpoint, which returns the matching reachable host.
         if (s.hostPort() > 0) props.put("localPort", s.hostPort());
 
         Map<String, Object> resp = new LinkedHashMap<>();
