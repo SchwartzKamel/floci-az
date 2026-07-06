@@ -132,6 +132,10 @@ Each Event Hubs namespace gets its own isolated Artemis container with dynamical
 | `GET` | `/{account}-eventhub/namespaces/{ns}/connection` | Get connection info (ports) |
 | `GET` | `/{account}-eventhub/namespaces/{ns}/tls-cert` | Get TLS certificate PEM |
 
+> When Event Hubs runs in mocked mode (`event-hub.mocked=true`), the namespace management API
+> still works, but both `GET .../namespaces/{ns}/tls-cert` and the backward-compatible
+> `GET .../tls-cert` endpoint return `503` because no broker-backed TLS certificate exists.
+
 #### Create a namespace
 
 ```bash
