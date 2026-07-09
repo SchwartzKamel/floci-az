@@ -108,6 +108,14 @@ public class BannerLogger {
                             + "-" + config.services().redis().maxPort();
             sb.append(serviceStatusDocker("redis", true, redisInfo));
         }
+        if (config.services().containerApp().enabled()) {
+            String containerAppInfo = config.services().containerApp().mocked()
+                    ? "mocked  (no docker)"
+                    : "image:" + config.services().containerApp().defaultImage()
+                            + "  ports:" + config.services().containerApp().basePort()
+                            + "-" + config.services().containerApp().maxPort();
+            sb.append(serviceStatusDocker("containerapp", true, containerAppInfo));
+        }
         if (config.services().acr().enabled()) {
             String acrInfo = config.services().acr().mocked()
                     ? "mocked  (no registry)"

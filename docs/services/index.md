@@ -20,6 +20,7 @@ Floci-AZ provides emulation for several core Azure services.
 | **Virtual Network** | ARM path (`Microsoft.Network`) | ✅ VNets, subnets, NICs, public IPs, NSGs; in-process ARM state for Terraform/OpenTofu and VM dependencies |
 | **Virtual Machines** | ARM path (`Microsoft.Compute`) | ✅ VM lifecycle (create/start/stop/deallocate/restart/delete/list), instanceView; mocked (Docker backing planned) |
 | **Azure Cache for Redis** | ARM path (`Microsoft.Cache`) | ✅ Cache CRUD, listKeys/regenerateKey; real Redis containers (data plane) or mocked |
+| **Azure Container Apps** | ARM path (`Microsoft.App`) | ✅ Managed environments + container apps CRUD; real Docker-backed ingress or mocked |
 | **Azure Container Registry** | ARM path (`Microsoft.ContainerRegistry`) | ✅ Registry CRUD, admin credentials, checkNameAvailability; one shared `registry:2` (Docker Registry V2 push/pull) or mocked |
 | **Microsoft Entra ID** | `/{tenant}/oauth2/...` + `/.well-known/openid-configuration` | ✅ OpenID Connect provider — RS256-signed tokens, JWKS, discovery; client-credentials + ROPC grants (app registration, Graph, interactive flows planned) |
 | **Event Grid** | ARM path (`Microsoft.EventGrid`) + `/{topic}-eventgrid/api/events` | ✅ Custom Topics, access keys, webhook event subscriptions with filters, publish (Event Grid + CloudEvents 1.0), async delivery with retry, subscription validation handshake |
@@ -40,5 +41,6 @@ The following services spin up Docker containers on demand and require the Docke
 | **Azure SQL Database** | `mcr.microsoft.com/azure-sql-edge:latest` | TDS direct to container port |
 | **Cosmos DB engines** | Various (mongo, postgres, cassandra, …) | Protocol direct to container port |
 | **Azure Kubernetes Service** | `rancher/k3s:latest` | kubectl direct to k3s API server port |
+| **Azure Container Apps** | User-provided image | HTTP to mapped ingress port |
 
 > These services **must** have access to the Docker daemon (`/var/run/docker.sock` mount in Docker Compose).

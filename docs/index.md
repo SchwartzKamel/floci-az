@@ -8,7 +8,7 @@
 
 ---
 
-Floci-AZ is a fast, free, and open-source local Azure service emulator — providing Blob Storage, Queues, Tables, Azure Functions, App Configuration, Cosmos DB (all APIs), Key Vault, Event Hubs, API Management, Virtual Network, Virtual Machines, Azure Cache for Redis, and Azure Container Registry in a single native binary.
+Floci-AZ is a fast, free, and open-source local Azure service emulator — providing Blob Storage, Queues, Tables, Azure Functions, App Configuration, Cosmos DB (all APIs), Key Vault, Event Hubs, API Management, Virtual Network, Virtual Machines, Azure Cache for Redis, Azure Container Apps, and Azure Container Registry in a single native binary.
 
 ## Why floci-az?
 
@@ -87,6 +87,7 @@ flowchart LR
 | **Virtual Network** | ARM path (`Microsoft.Network`) | VNets, subnets, NICs, public IPs, NSGs for Terraform/OpenTofu and VM dependencies |
 | **Virtual Machines** | ARM path (`Microsoft.Compute`) | VM lifecycle, power actions, instanceView; mocked control plane |
 | **Azure Cache for Redis** | ARM path (`Microsoft.Cache`) | Cache CRUD, keys, real Redis-compatible containers or mocked mode |
+| **Azure Container Apps** | ARM path (`Microsoft.App`) | Managed environments + container apps CRUD; real Docker-backed ingress or mocked mode |
 | **Azure Container Registry** | ARM path (`Microsoft.ContainerRegistry`) | Registry CRUD, credentials, Docker Registry V2 push/pull support |
 
 ## Quick Start

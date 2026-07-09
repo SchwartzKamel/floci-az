@@ -410,6 +410,13 @@ public class AzureRoutingFilter {
             }
         }
 
+        if (path.startsWith("subscriptions/") && path.contains("/providers/Microsoft.App/")) {
+            Response response = dispatchManagementPlane(requestContext, "containerapp", path, headers, secure);
+            if (response != null) {
+                return response;
+            }
+        }
+
         // ---------------------------------------------------------------
         // Azure Communication Services (Email) — ARM management-plane paths:
         //   subscriptions/{sub}/[resourceGroups/{rg}/]providers/Microsoft.Communication/...

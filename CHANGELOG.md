@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **containerapp:** Azure Container Apps emulation (`Microsoft.App/managedEnvironments` + `containerApps`) replacing the previous non-functional stub. ARM CRUD for managed environments and container apps (Get, CreateOrUpdate, Delete, List by subscription and resource group), mocked mode by default for Docker-free tests, and real Docker-backed app containers when `floci-az.services.container-app.mocked=false`. Non-mocked apps publish `configuration.ingress.targetPort` to a host port range, provision asynchronously (`Creating` → `Succeeded` once the container becomes reachable), and stop/remove the backing container on delete. Scale metadata (`minReplicas` / `maxReplicas`) is stored and returned faithfully, but this MVP still runs a single replica only — no real autoscaling, revision history, or scale-to-zero yet.
+
 ## [0.8.0] - 2026-06-25
 
 ### Added
