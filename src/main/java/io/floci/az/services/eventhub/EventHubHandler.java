@@ -214,6 +214,13 @@ public class EventHubHandler implements AzureServiceHandler {
         EventHubNamespaceManager.NamespaceState ns = state.get();
 
         if ("tls-cert".equals(sub)) {
+            if (ns.mocked() || ns.tlsCertPem() == null || ns.tlsCertPem().isBlank()) {
+                return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                        .entity("{\"error\":\"TLS certificate not available for namespace: " + namespaceName
+                                + "\",\"message\":\"This Event Hubs namespace is running in mocked management-only mode, so no broker-backed TLS certificate exists.\"}")
+                        .type("application/json")
+                        .build();
+            }
             return Response.ok(ns.tlsCertPem()).type("application/x-pem-file").build();
         }
         if ("connection".equals(sub)) {
@@ -300,7 +307,15 @@ public class EventHubHandler implements AzureServiceHandler {
                     .entity("{\"error\":\"Default namespace TLS cert not yet available\"}")
                     .type("application/json").build();
         }
-        return Response.ok(state.get().tlsCertPem()).type("application/x-pem-file").build();
+        EventHubNamespaceManager.NamespaceState ns = state.get();
+        if (ns.mocked() || ns.tlsCertPem() == null || ns.tlsCertPem().isBlank()) {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                    .entity("{\"error\":\"TLS certificate not available for namespace: " + defaultNs
+                            + "\",\"message\":\"This Event Hubs namespace is running in mocked management-only mode, so no broker-backed TLS certificate exists.\"}")
+                    .type("application/json")
+                    .build();
+        }
+        return Response.ok(ns.tlsCertPem()).type("application/x-pem-file").build();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
