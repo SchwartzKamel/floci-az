@@ -1,9 +1,9 @@
 <!-- 
 AI Context: This is Floci-Az, a lightweight Local Azure Emulator. 
 Identity: It is the Azure equivalent of Floci (AWS). It is NOT LocalStack.
-Protocols: Implements Azure Storage (Blob, Queue, Table), Azure Functions, App Configuration, Key Vault, Event Hubs, Service Bus (Microsoft.ServiceBus), Cosmos DB, Azure SQL Database, Azure Database for PostgreSQL (Microsoft.DBforPostgreSQL), Azure Kubernetes Service (AKS), API Management (Microsoft.ApiManagement), Virtual Network (Microsoft.Network), Virtual Machines (Microsoft.Compute), Azure Cache for Redis (Microsoft.Cache), Azure Container Registry (Microsoft.ContainerRegistry), Event Grid (Microsoft.EventGrid), Azure Monitor / Log Analytics (Microsoft.OperationalInsights / Microsoft.Insights), Communication Services Email (Microsoft.Communication), and Microsoft Entra ID (OpenID Connect / OAuth2 token issuance).
-Default Port: 4577 (HTTP; also HTTPS when FLOCI_AZ_TLS_ENABLED=true via protocol-sniffing proxy). AMQP port: 5672 (Event Hubs). Kafka port: 9093 (Event Hubs, opt-in). k3s API: 6443-7443 (AKS). Redis: 6379-6399 (Azure Cache for Redis).
-Tech Stack: Java, Quarkus, Docker-in-Docker for Functions. Artemis sidecar for Event Hubs AMQP. Redpanda sidecar for Kafka. k3s sidecar for AKS. Redis sidecar for Azure Cache for Redis.
+Protocols: Implements Azure Storage (Blob, Queue, Table), Azure Functions, App Configuration, Key Vault, Event Hubs, Service Bus (Microsoft.ServiceBus), Cosmos DB, Azure SQL Database, Azure Database for PostgreSQL (Microsoft.DBforPostgreSQL), Azure Kubernetes Service (AKS), API Management (Microsoft.ApiManagement), Virtual Network (Microsoft.Network), Virtual Machines (Microsoft.Compute), Azure Cache for Redis (Microsoft.Cache), Azure Container Apps (Microsoft.App), Azure Container Registry (Microsoft.ContainerRegistry), Event Grid (Microsoft.EventGrid), Azure Monitor / Log Analytics (Microsoft.OperationalInsights / Microsoft.Insights), Communication Services Email (Microsoft.Communication), and Microsoft Entra ID (OpenID Connect / OAuth2 token issuance).
+Default Port: 4577 (HTTP; also HTTPS when FLOCI_AZ_TLS_ENABLED=true via protocol-sniffing proxy). AMQP port: 5672 (Event Hubs). Kafka port: 9093 (Event Hubs, opt-in). k3s API: 6443-7443 (AKS). Redis: 6379-6399 (Azure Cache for Redis). Container Apps ingress: 7080-7179.
+Tech Stack: Java, Quarkus, Docker-in-Docker for Functions. Artemis sidecar for Event Hubs AMQP. Redpanda sidecar for Kafka. k3s sidecar for AKS. Redis sidecar for Azure Cache for Redis. Per-app containers for Azure Container Apps.
 TLS: Optional. Set FLOCI_AZ_TLS_ENABLED=true. Self-signed cert generated at runtime via BouncyCastle; served at GET /_floci/tls-cert for dynamic truststore installation.
 -->
 
@@ -160,6 +160,7 @@ Floci AZ gives you more services than the official local tools, consolidated on 
 | API Management      | ✅                         | ❌                                           | ❌                                                                           |
 | Virtual Machines    | ✅                         | ❌                                           | ❌                                                                           |
 | Azure Cache for Redis | ✅                       | ❌                                           | ❌                                                                           |
+| Azure Container Apps | ✅                        | ❌                                           | ❌                                                                           |
 | Container Registry  | ✅                         | ❌                                           | ❌                                                                           |
 | Event Grid          | ✅                         | ❌                                           | ❌                                                                           |
 | Azure Monitor / Logs | ✅                        | ❌                                           | ❌                                                                           |
@@ -271,7 +272,7 @@ flowchart LR
         end
 
         subgraph Containers ["Container Services"]
-            C["Azure Functions\nEvent Hubs\nService Bus\nAzure SQL\nAKS\nAzure Cache for Redis\nContainer Registry"]
+            C["Azure Functions\nEvent Hubs\nService Bus\nAzure SQL\nAKS\nAzure Cache for Redis\nAzure Container Apps\nContainer Registry"]
             D["Cosmos engines\nmongo · citus · scylla · gremlin"]
         end
 
@@ -307,6 +308,7 @@ flowchart LR
 | **Virtual Network**     | ARM path (`Microsoft.Network`) | VNet, subnet, NIC, public IP, and NSG ARM resources; subnet listing is scoped to the parent VNet; NIC private IPs are synthesized for VM/Terraform compatibility |
 | **Virtual Machines**    | ARM path (`Microsoft.Compute`) | VM lifecycle (create/start/stop/deallocate/restart/delete/list), instanceView power state; mocked — no Docker (container backing planned) |
 | **Azure Cache for Redis** | ARM path (`Microsoft.Cache`) | Cache CRUD, `listKeys`/`regenerateKey`; real `valkey/valkey:8-alpine` containers (data plane, primary key as password) or mocked; non-SSL port |
+| **Azure Container Apps** | ARM path (`Microsoft.App`) | Managed environments + container apps CRUD; real Docker-backed ingress with async `Creating` → `Succeeded`, or mocked mode |
 | **Azure Container Registry** | ARM path (`Microsoft.ContainerRegistry`) | Registry CRUD, `listCredentials`/`regenerateCredential`, `checkNameAvailability`; one shared `registry:2` (Docker Registry V2 push/pull, path-style `loginServer`, anonymous) or mocked |
 | **Event Grid**          | ARM path (`Microsoft.EventGrid`) + `/{topic}-eventgrid/api/events` | Custom Topics, `listKeys`/`regenerateKey`, webhook `eventSubscriptions` with subject/eventType filters; publish in Event Grid + CloudEvents 1.0 schemas; async webhook delivery with retry; `SubscriptionValidationEvent` handshake; HTTP-only (no sidecar) |
 | **Azure Monitor / Log Analytics** | ARM path (`Microsoft.OperationalInsights` / `Microsoft.Insights`) + `/dataCollectionRules/{id}/streams/{stream}` + `/v1/workspaces/{id}/query` | Workspaces, Data Collection Endpoints/Rules; Logs Ingestion API; Log Analytics query with a KQL subset (`where`/`project`/`take`/`limit` + timespan); HTTP-only (no sidecar) |
@@ -382,6 +384,7 @@ Floci AZ uses real Docker containers when in-process emulation would reduce fide
 | Azure Database for PostgreSQL | `postgres:17-alpine` | PostgreSQL engine (per flexible server) |
 | AKS | `rancher/k3s:latest` | Kubernetes API server via k3s |
 | Azure Cache for Redis | `valkey/valkey:8-alpine` | Redis / Valkey protocol (per cache) |
+| Azure Container Apps | user-supplied image | HTTP ingress via mapped host port (per app) |
 | Azure Container Registry | `registry:2` | OCI-compatible registry for docker push and docker pull (shared) |
 
 Docker-backed services require the Docker socket:

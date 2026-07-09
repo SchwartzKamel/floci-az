@@ -48,6 +48,7 @@ public class AzureServiceRegistry {
             case "vm"         -> config.services().vm().enabled();
             case "apim"       -> config.services().apim().enabled();
             case "redis"      -> config.services().redis().enabled();
+            case "containerapp" -> config.services().containerApp().enabled();
             case "acr"        -> config.services().acr().enabled();
             case "email"      -> config.services().email().enabled();
             case "monitor"    -> config.services().monitor().enabled();

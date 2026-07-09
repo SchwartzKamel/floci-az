@@ -5,6 +5,7 @@ import io.floci.az.services.acr.AcrHandler;
 import io.floci.az.services.aks.AksHandler;
 import io.floci.az.services.blob.BlobServiceHandler;
 import io.floci.az.services.cosmos.CosmosHandler;
+import io.floci.az.services.containerapp.ContainerAppHandler;
 import io.floci.az.services.eventgrid.EventGridHandler;
 import io.floci.az.services.eventhub.EventHubHandler;
 import io.floci.az.services.functions.FunctionsServiceHandler;
@@ -33,6 +34,7 @@ public class AdminController {
     @Inject AksHandler              aksHandler;
     @Inject BlobServiceHandler      blobHandler;
     @Inject CosmosHandler           cosmosHandler;
+    @Inject ContainerAppHandler     containerAppHandler;
     @Inject EventHubHandler         eventHubHandler;
     @Inject FunctionsServiceHandler functionsHandler;
     @Inject KeyVaultHandler         keyVaultHandler;
@@ -73,6 +75,7 @@ public class AdminController {
         aksHandler.clearAll();
         blobHandler.clearAll();
         cosmosHandler.clearAll();
+        containerAppHandler.clearAll();
         functionsHandler.clearAll();
         keyVaultHandler.clearAll();
         networkHandler.clearAll();

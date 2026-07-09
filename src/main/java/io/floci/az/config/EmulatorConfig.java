@@ -127,6 +127,7 @@ public interface EmulatorConfig {
         VmConfig               vm();
         ApimConfig             apim();
         RedisConfig            redis();
+        ContainerAppConfig     containerApp();
         AcrConfig              acr();
         MonitorConfig          monitor();
         EntraConfig            entra();
@@ -286,6 +287,30 @@ public interface EmulatorConfig {
         /** Per-instance max memory, e.g. "256mb", "1gb". */
         @WithDefault("256mb")
         String maxMemory();
+    }
+
+    interface ContainerAppConfig {
+        @WithDefault("true")
+        boolean enabled();
+
+        /**
+         * When {@code true}, no app container is started; managed environments and container apps
+         * transition immediately to {@code Succeeded} / {@code Running}. Useful for tests without Docker.
+         */
+        @WithDefault("true")
+        boolean mocked();
+
+        /** Fallback Docker image used when the resource omits a container image or startup fails. */
+        @WithDefault("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest")
+        String defaultImage();
+
+        /** Start of the host port range for ingress-mapped Container Apps. */
+        @WithDefault("7080")
+        int basePort();
+
+        /** End of the host port range for ingress-mapped Container Apps. */
+        @WithDefault("7179")
+        int maxPort();
     }
 
     interface AksConfig {
