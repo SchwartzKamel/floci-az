@@ -1,0 +1,36 @@
+# .github/wgm-hive.yml — this project's one-time consent for wgm's Hive Growth Loop.
+#
+# Presence/absence of THIS FILE (committed to .github/, shared by the whole team — never .wgm/,
+# which is gitignored/local-only) is the trigger: if it doesn't exist yet, wgm's Triage phase asks
+# the question below as the very first thing it does on this project, before any other Triage or
+# Grill question. Whatever the answer, wgm writes this file so it is never asked again unless you
+# delete it. See references/self-improvement.md ("Consent & continuous mode") and
+# references/issue-intake.md for the full discipline this file gates.
+#
+# Runtime prompt wgm asks: "wgm can automatically anonymize and report lessons from this build
+# upstream to agent-frontier/wgm. Enable this for this project? [y/N]"
+
+# Master switch. false = wgm never files or updates an upstream issue automatically; it behaves like
+# today's ask-every-time Report step instead. true = the Report step runs on its own (see
+# auto_report below) with zero further per-run prompting.
+# Decision: declined — this is a personal fork; keep all lessons local to this repo only.
+consent: false
+
+# Whether upstream filing actually fires automatically. Defaults to mirroring `consent` above --
+# only set this independently if you want to consent to LOCAL aggregation/anonymization (so you can
+# review a draft) without wgm ever filing anything upstream on its own.
+# Note: `consent: false` + `auto_report: true` is representable YAML but a no-op today;
+# `scripts/harvest-hive.sh` only auto-files when BOTH fields are `true`.
+auto_report: false
+
+# Which capture channels feed the growth loop for this project. This list is accepted here but NOT
+# YET enforced by any shipped script, so trimming it currently has no observable effect; it does not
+# affect anonymization, which is always applied to every source.
+sources:
+  - dogfood      # this build's own .wgm/memories.md
+  - swarm        # scripts/swarm.sh node memories, consolidated (references/self-improvement.md)
+  - issues       # this project's own GitHub Issues, as backlog/context (references/issue-intake.md)
+  - cross-pollinate  # external research findings (references/self-improvement.md)
+
+# NOT a field here on purpose: anonymization is mandatory and always on for every source above,
+# regardless of consent or auto_report. It cannot be disabled from this file.
