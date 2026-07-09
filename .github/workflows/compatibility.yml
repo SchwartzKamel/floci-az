@@ -79,6 +79,10 @@ jobs:
               -e SERVICEBUS_AMQPS_PORT=5671
               -e SERVICEBUS_NAMESPACE=default
           - test: sdk-test-node
+            extra_env: >-
+              -e SERVICEBUS_HOST=floci-az-servicebus-default
+              -e SERVICEBUS_AMQPS_PORT=5671
+              -e SERVICEBUS_NAMESPACE=default
           - test: compat-terraform
           - test: compat-opentofu
           - test: compat-azcli
