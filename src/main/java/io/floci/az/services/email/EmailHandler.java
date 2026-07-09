@@ -254,6 +254,15 @@ public class EmailHandler implements AzureServiceHandler {
         }
 
         // ── emailServices ─────────────────────────────────────────────────
+        // Domain LIST: emailServices/{name}/domains
+        if (tail.matches("emailServices/[^/]+/domains(\\?.*)?") && "GET".equals(method)) {
+            String emailServiceName = extractSegment(tail, "emailServices");
+            List<Map<String, Object>> domains = emailDomains.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(emailServiceName + "/"))
+                    .map(Map.Entry::getValue)
+                    .toList();
+            return Response.ok(Map.of("value", domains)).type("application/json").build();
+        }
         // Domain CRUD: emailServices/{name}/domains/{domain}
         if (tail.matches("emailServices/[^/]+/domains/[^/?]+(\\?.*)?")) {
             String emailServiceName = extractSegment(tail, "emailServices");
