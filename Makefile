@@ -71,7 +71,7 @@ compat-network:
 
 compat-build:
 	$(MVN) clean package -DskipTests -q
-	docker build -f docker/Dockerfile.jvm-package -t $(FLOCI_AZ_IMAGE) .
+	docker build -f docker/Dockerfile -t $(FLOCI_AZ_IMAGE) .
 
 compat-run: compat-network
 	@docker rm -f floci-az >/dev/null 2>&1 || true
