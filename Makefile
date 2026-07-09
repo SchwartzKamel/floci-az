@@ -3,6 +3,7 @@
         run-cosmos-mongo run-cosmos-postgresql run-cosmos-cassandra run-cosmos-gremlin run-cosmos-table run-cosmos-nosql run-sql \
         test test-python-compat test-python-compat-local test-java-compat test-java-compat-local test-node-compat test-node-compat-local test-servicebus-compat \
         test-blob test-blob-local test-blob-python test-blob-python-local test-blob-java test-blob-java-local test-blob-node test-blob-node-local \
+        test-monitor-python test-monitor-python-local test-eventgrid-node test-eventgrid-node-local test-servicebus-node test-servicebus-node-local \
         test-apim-java \
         test-cosmos test-cosmos-mongo test-cosmos-postgresql test-cosmos-cassandra test-cosmos-gremlin test-cosmos-table test-cosmos-nosql test-cosmos-all \
         test-sql test-terraform-compat test-opentofu-compat test-azcli test-iac-compat compat-docker test-compat clean
@@ -70,7 +71,7 @@ compat-network:
 
 compat-build:
 	$(MVN) clean package -DskipTests -q
-	docker build -f docker/Dockerfile.jvm-package -t $(FLOCI_AZ_IMAGE) .
+	docker build -f docker/Dockerfile -t $(FLOCI_AZ_IMAGE) .
 
 compat-run: compat-network
 	@docker rm -f floci-az >/dev/null 2>&1 || true
@@ -197,6 +198,9 @@ test-node-compat:
 			-e FLOCI_AZ_ENDPOINT=http://floci-az:4577 \
 			-e EVENTHUB_HOST=floci-az-artemis-emulatorNs1 \
 			-e EVENTHUB_AMQP_PORT=5672 \
+			-e SERVICEBUS_HOST=floci-az-servicebus-default \
+			-e SERVICEBUS_AMQPS_PORT=5671 \
+			-e SERVICEBUS_NAMESPACE=default \
 			-v "$(CURDIR)/$(COMPAT_RESULTS)/node:/results" \
 			$(NODE_IMAGE); \
 		EXIT=$$?; \
@@ -358,6 +362,89 @@ test-blob-local:
 	if [ $$EXIT -eq 0 ]; then $(MAKE) test-blob-java-local; EXIT=$$?; fi; \
 	$(MAKE) -C $(CURDIR) stop; exit $$EXIT
 
+# ── Monitor compatibility subset ──────────────────────────────────────────────
+
+test-monitor-python:
+	@echo "==> Azure Monitor Python SDK compatibility tests (Docker)"
+	@mkdir -p $(COMPAT_RESULTS)/monitor-python
+	$(MAKE) compat-build
+	$(MAKE) compat-run
+	@EXIT=0; \
+	$(MAKE) compat-python-image || EXIT=$$?; \
+	if [ $$EXIT -eq 0 ]; then \
+		docker run --rm --network $(COMPAT_NETWORK) \
+			-e FLOCI_AZ_ENDPOINT=http://floci-az:4577 \
+			-v "$(CURDIR)/$(COMPAT_RESULTS)/monitor-python:/results" \
+			--entrypoint pytest \
+			$(PYTHON_IMAGE) tests/test_monitor.py -q --junit-xml=/results/junit.xml; \
+		EXIT=$$?; \
+	fi; \
+	$(MAKE) -C $(CURDIR) compat-stop; exit $$EXIT
+
+test-monitor-python-local: require-emulator
+	@echo "==> Azure Monitor Python SDK compatibility tests (local emulator)"
+	@cd $(PYTHON_DIR) && \
+	if [ ! -d venv ]; then python3 -m venv venv; fi && \
+	./venv/bin/pip install -q -r requirements.txt && \
+	FLOCI_AZ_ENDPOINT=http://127.0.0.1:$(PORT) ./venv/bin/pytest -q tests/test_monitor.py
+
+# ── Event Grid compatibility subset ───────────────────────────────────────────
+
+test-eventgrid-node:
+	@echo "==> Azure Event Grid Node.js SDK compatibility tests (Docker)"
+	@mkdir -p $(COMPAT_RESULTS)/eventgrid-node
+	$(MAKE) compat-build
+	$(MAKE) compat-run
+	@EXIT=0; \
+	$(MAKE) compat-node-image || EXIT=$$?; \
+	if [ $$EXIT -eq 0 ]; then \
+		docker run --rm --network $(COMPAT_NETWORK) \
+			-e FLOCI_AZ_ENDPOINT=http://floci-az:4577 \
+			-e JEST_JUNIT_OUTPUT_DIR=/results \
+			-e JEST_JUNIT_OUTPUT_NAME=junit.xml \
+			-v "$(CURDIR)/$(COMPAT_RESULTS)/eventgrid-node:/results" \
+			--entrypoint npm \
+			$(NODE_IMAGE) test -- --runTestsByPath tests/eventgrid.test.ts; \
+		EXIT=$$?; \
+	fi; \
+	$(MAKE) -C $(CURDIR) compat-stop; exit $$EXIT
+
+test-eventgrid-node-local: require-emulator
+	@echo "==> Azure Event Grid Node.js SDK compatibility tests (local emulator)"
+	@cd $(NODE_DIR) && \
+	npm install --silent && \
+	FLOCI_AZ_ENDPOINT=http://127.0.0.1:$(PORT) npm test -- --runTestsByPath tests/eventgrid.test.ts
+
+# ── Service Bus compatibility subset ──────────────────────────────────────────
+
+test-servicebus-node:
+	@echo "==> Service Bus Node.js SDK compatibility tests (Docker)"
+	@mkdir -p $(COMPAT_RESULTS)/servicebus-node
+	$(MAKE) compat-build
+	$(MAKE) compat-run
+	@EXIT=0; \
+	$(MAKE) compat-node-image || EXIT=$$?; \
+	if [ $$EXIT -eq 0 ]; then \
+		docker run --rm --network $(COMPAT_NETWORK) \
+			-e FLOCI_AZ_ENDPOINT=http://floci-az:4577 \
+			-e SERVICEBUS_HOST=floci-az-servicebus-default \
+			-e SERVICEBUS_AMQPS_PORT=5671 \
+			-e SERVICEBUS_NAMESPACE=default \
+			-e JEST_JUNIT_OUTPUT_DIR=/results \
+			-e JEST_JUNIT_OUTPUT_NAME=junit.xml \
+			-v "$(CURDIR)/$(COMPAT_RESULTS)/servicebus-node:/results" \
+			--entrypoint npm \
+			$(NODE_IMAGE) test -- --runTestsByPath tests/servicebus.test.ts; \
+		EXIT=$$?; \
+	fi; \
+	$(MAKE) -C $(CURDIR) compat-stop; exit $$EXIT
+
+test-servicebus-node-local: require-emulator
+	@echo "==> Service Bus Node.js SDK compatibility tests (local emulator)"
+	@cd $(NODE_DIR) && \
+	npm install --silent && \
+	FLOCI_AZ_ENDPOINT=http://127.0.0.1:$(PORT) SERVICEBUS_HOST=localhost npm test -- --runTestsByPath tests/servicebus.test.ts
+
 # ── Cosmos / SQL compatibility ────────────────────────────────────────────────
 
 test-cosmos:
@@ -513,6 +600,9 @@ compat-docker:
 			-e FLOCI_AZ_ENDPOINT=http://floci-az:4577 \
 			-e EVENTHUB_HOST=floci-az-artemis-emulatorNs1 \
 			-e EVENTHUB_AMQP_PORT=5672 \
+			-e SERVICEBUS_HOST=floci-az-servicebus-default \
+			-e SERVICEBUS_AMQPS_PORT=5671 \
+			-e SERVICEBUS_NAMESPACE=default \
 			-v "$(CURDIR)/$(COMPAT_RESULTS)/node:/results" \
 			$(NODE_IMAGE); \
 		EXIT=$$?; \
